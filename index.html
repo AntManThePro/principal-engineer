@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS // PRINCIPAL ENGINEER</title>
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/favicon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/favicon-512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --neon-green: #00ff87;
+            --cyan: #60efff;
+            --hot-pink: #ff0080;
+            --yellow: #ffcc00;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-weight: 600;
+        }
+
+        .nexus-bg {
+            background-color: #0a0a0f;
+            background-image: 
+                linear-gradient(rgba(0, 255, 135, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 135, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .neon-text {
+            text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
+        }
+
+        .neon-cyan {
+            text-shadow: 0 0 10px var(--cyan), 0 0 20px var(--cyan);
+        }
+
+        .neon-pink {
+            text-shadow: 0 0 10px var(--hot-pink), 0 0 20px var(--hot-pink);
+        }
+
+        .section-header {
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .agent-log {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .log-line {
+            padding: 2px 0;
+            border-left: 2px solid transparent;
+            padding-left: 8px;
+            margin-bottom: 1px;
+        }
+
+        .log-protocol { border-color: var(--cyan); color: #67e8f9; }
+        .log-success { border-color: var(--neon-green); color: #4ade80; }
+        .log-action { border-color: var(--hot-pink); color: #f472b6; }
+        .log-decision { border-color: var(--yellow); color: #facc15; }
+
+        .nexus-card {
+            background-color: #111113;
+            border: 1px solid #27272a;
+            transition: all 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .nexus-card:hover {
+            border-color: #3f3f46;
+            box-shadow: 0 0 0 1px rgba(0, 255, 135, 0.1);
+        }
+
+        #repo-canvas {
+            border: 1px solid #27272a;
+            border-radius: 8px;
+            background-color: #0a0a0f;
+            touch-action: none;
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.3),
+                        0 0 30px rgba(0, 255, 135, 0.1);
+        }
+
+        .node {
+            transition: filter 0.1s ease;
+        }
+
+        .status-bar {
+            background: linear-gradient(to right, #111113, #0a0a0f);
+            border-top: 1px solid #27272a;
+        }
+
+        .metric-bar {
+            height: 6px;
+            background: #27272a;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .metric-fill {
+            height: 100%;
+            transition: width 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            border-radius: 9999px;
+        }
+
+        .neon-button {
+            transition: all 0.1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neon-button:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 135, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .neon-button:active {
+            transform: scale(0.985);
+        }
+
+        .protocol-badge {
+            font-size: 9px;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .graph-node {
+            cursor: grab;
+            user-select: none;
+        }
+
+        .scanline {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 255, 135, 0.015) 51%
+            );
+            background-size: 100% 6px;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+            z-index: 10;
+            border-radius: 8px;
+        }
+
+        @keyframes scan {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 300px; }
+        }
+
+        .matrix-text {
+            font-family: ui-monospace, monospace;
+            font-size: 10px;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body class="nexus-bg text-zinc-200">
+    <div class="max-w-[1480px] mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-8 pt-6 pb-4 border-b border-zinc-800">
+            <div class="flex items-center gap-x-4">
+                <div class="flex items-center gap-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00ff87] via-[#60efff] to-[#ff0080] flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-microchip text-[#0a0a0f] text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-baseline gap-x-2">
+                            <span class="font-display text-4xl font-semibold tracking-tighter neon-text">NEXUS</span>
+                            <span class="font-display text-3xl font-semibold tracking-[-2px] text-zinc-400">PRINCIPAL</span>
+                        </div>
+                        <div class="text-[10px] text-zinc-500 -mt-1.5 pl-0.5">ENGINEER AGENT v2.1 • REPO ARCHITECT</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-x-6 text-sm">
+                <div class="flex items-center gap-x-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800">
+                    <div class="w-2 h-2 rounded-full bg-[#00ff87] animate-pulse"></div>
+                    <span class="text-xs font-mono text-zinc-400">SKILL ACTIVE</span>
+                    <span class="text-xs font-mono text-[#00ff87]">repo-principal-engineer</span>
+                </div>
+                
+                <div class="text-right">
+                    <div class="text-xs text-zinc-400">DoubleA @ AntManThePro</div>
+                    <div class="text-[10px] text-zinc-500 font-mono">Kyle, TX</div>
+                </div>
+                
+                <button onclick="downloadArtifact()" 
+                        class="neon-button flex items-center gap-x-2 px-5 py-2 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-[#00ff87]/30 hover:border-[#00ff87] text-[#00ff87] text-sm font-semibold">
+                    <i class="fa-solid fa-download mr-1.5"></i>
+                    <span>DOWNLOAD ARTIFACT</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Task Bar -->
+        <div class="px-8 pt-5 pb-4 border-b border-zinc-800 bg-[#0a0a0f]/80 backdrop-blur-xl sticky top-0 z-50">
+            <div class="flex items-end gap-x-3">
+                <div class="flex-1">
+                    <div class="section-header text-[#60efff] mb-1.5 flex items-center gap-x-2">
+                        <i class="fa-solid fa-terminal"></i>
+                        <span>NATURAL LANGUAGE TASK INPUT</span>
+                    </div>
+                    <div class="flex gap-x-2">
+                        <input id="task-input" type="text" 
+                               class="flex-1 bg-zinc-900 border border-zinc-700 focus:border-[#00ff87] rounded-2xl px-5 py-3 text-sm placeholder:text-zinc-500 focus:outline-none font-mono"
+                               placeholder="e.g. Fix race condition in network-sync module or Add real-time collab to UNRULY engine"
+                               value="Fix root cause of state inconsistency in data-layer">
+                        <button onclick="executeAgentTask()" 
+                                class="neon-button px-8 rounded-2xl bg-[#00ff87] hover:bg-[#00ff87]/90 text-[#0a0a0f] font-bold flex items-center gap-x-2 text-sm">
+                            <i class="fa-solid fa-play mr-1"></i>
+                            <span>EXECUTE TASK</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Preset Actions -->
+                <div class="flex gap-x-1.5">
+                    <button onclick="runPresetTask('bugfix')" 
+                            class="neon-button px-4 py-2.5 text-xs font-semibold rounded-2xl border border-[#ff0080]/40 hover:border-[#ff0080] text-[#ff0080] flex items-center gap-x-1.5 bg-zinc-900">
+                        <i class="fa-solid fa-bug"></i>
+                        <span>BUG FIX</span>
+                    </button>
+                    <button onclick="runPresetTask('feature')" 
+                            class="neon-button px-4 py-2.5 text-xs font-semibold rounded-2xl border border-[#60efff]/40 hover:border-[#60efff] text-[#60efff] flex items-center gap-x-1.5 bg-zinc-900">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>ADD FEATURE</span>
+                    </button>
+                    <button onclick="runPresetTask('refactor')" 
+                            class="neon-button px-4 py-2.5 text-xs font-semibold rounded-2xl border border-[#ffcc00]/40 hover:border-[#ffcc00] text-[#ffcc00] flex items-center gap-x-1.5 bg-zinc-900">
+                        <i class="fa-solid fa-sync-alt"></i>
+                        <span>REFACTOR</span>
+                    </button>
+                    <button onclick="runPresetTask('audit')" 
+                            class="neon-button px-4 py-2.5 text-xs font-semibold rounded-2xl border border-[#00ff87]/40 hover:border-[#00ff87] text-[#00ff87] flex items-center gap-x-1.5 bg-zinc-900">
+                        <i class="fa-solid fa-search"></i>
+                        <span>FULL AUDIT</span>
+                    </button>
+                    <button onclick="startTraining()" 
+                            class="neon-button px-4 py-2.5 text-xs font-semibold rounded-2xl border border-white/20 hover:border-white/40 text-white flex items-center gap-x-1.5 bg-zinc-900">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>TRAIN</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-8 pt-6 pb-8 grid grid-cols-1 lg:grid-cols-12 gap-5">
+            
+            <!-- Agent Log -->
+            <div class="lg:col-span-3">
+                <div class="nexus-card rounded-3xl p-5 h-full flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="section-header text-[#60efff]">
+                            <i class="fa-solid fa-list-check mr-2"></i>AGENT REASONING LOG
+                        </div>
+                        <button onclick="clearLog()" class="text-[10px] px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-400">CLEAR</button>
+                    </div>
+                    
+                    <div id="agent-log" 
+                         class="agent-log flex-1 overflow-y-auto pr-2 space-y-px text-zinc-300 bg-[#0a0a0f] rounded-2xl p-3 border border-zinc-800 min-h-[380px] max-h-[520px]">
+                        <!-- Populated by JS -->
+                    </div>
+                    
+                    <div class="mt-3 text-[10px] text-zinc-500 flex items-center gap-x-1.5 px-1">
+                        <div class="flex-1 h-px bg-zinc-800"></div>
+                        <span>PROTOCOL ENFORCED</span>
+                        <div class="flex-1 h-px bg-zinc-800"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvas Graph -->
+            <div class="lg:col-span-6">
+                <div class="nexus-card rounded-3xl p-4 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-3 px-2">
+                        <div>
+                            <div class="section-header text-[#00ff87]">REPOSITORY STATE • LIVE GRAPH</div>
+                            <div class="text-[10px] text-zinc-500">Force-directed • Drag nodes to restructure architecture • Click for node details</div>
+                        </div>
+                        <div class="flex items-center gap-x-2 text-xs">
+                            <div class="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-700 flex items-center gap-x-1.5 text-[#00ff87]">
+                                <i class="fa-solid fa-project-diagram text-xs"></i>
+                                <span id="node-count">10</span> NODES
+                            </div>
+                            <div class="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-700 flex items-center gap-x-1.5 text-[#60efff]">
+                                <span id="link-count">15</span> LINKS
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative rounded-2xl overflow-hidden border border-zinc-800" style="height: 520px;">
+                        <canvas id="repo-canvas" width="800" height="520" class="w-full h-full"></canvas>
+                        <div class="scanline"></div>
+                        
+                        <!-- Canvas overlay legend -->
+                        <div class="absolute bottom-3 right-3 bg-[#0a0a0f]/90 border border-zinc-800 rounded-xl px-3 py-1.5 text-[10px] flex items-center gap-x-4">
+                            <div class="flex items-center gap-x-1.5"><div class="w-2 h-2 rounded-full bg-[#00ff87]"></div><span class="text-zinc-400">Healthy</span></div>
+                            <div class="flex items-center gap-x-1.5"><div class="w-2 h-2 rounded-full bg-[#ffcc00]"></div><span class="text-zinc-400">Degraded</span></div>
+                            <div class="flex items-center gap-x-1.5"><div class="w-2 h-2 rounded-full bg-[#ff0080]"></div><span class="text-zinc-400">Critical</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-3 px-1 text-[10px] text-zinc-500">
+                        <div>ALGORITHM: Force-directed layout + DFS cycle detection + Topological sort projection</div>
+                        <button onclick="resetGraph()" class="hover:text-[#00ff87] transition-colors flex items-center gap-x-1">
+                            <i class="fa-solid fa-undo text-xs"></i> <span>RESET GRAPH</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics + Decision -->
+            <div class="lg:col-span-3 space-y-5">
+                <!-- Metrics -->
+                <div class="nexus-card rounded-3xl p-5">
+                    <div class="section-header text-[#ffcc00] mb-4 flex items-center gap-x-2">
+                        <i class="fa-solid fa-tachometer-alt"></i>
+                        <span>LIVE SYSTEM METRICS</span>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-zinc-400">CORRECTNESS</span>
+                                <span id="metric-correctness" class="font-mono font-semibold text-[#00ff87] metric-value">94</span>
+                            </div>
+                            <div class="metric-bar"><div id="bar-correctness" class="metric-fill bg-[#00ff87]" style="width: 94%"></div></div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-zinc-400">RELIABILITY</span>
+                                <span id="metric-reliability" class="font-mono font-semibold text-[#60efff] metric-value">89</span>
+                            </div>
+                            <div class="metric-bar"><div id="bar-reliability" class="metric-fill bg-[#60efff]" style="width: 89%"></div></div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-zinc-400">SECURITY POSTURE</span>
+                                <span id="metric-security" class="font-mono font-semibold text-[#ff0080] metric-value">97</span>
+                            </div>
+                            <div class="metric-bar"><div id="bar-security" class="metric-fill bg-[#ff0080]" style="width: 97%"></div></div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-zinc-400">MAINTAINABILITY</span>
+                                <span id="metric-maintain" class="font-mono font-semibold text-[#ffcc00] metric-value">82</span>
+                            </div>
+                            <div class="metric-bar"><div id="bar-maintain" class="metric-fill bg-[#ffcc00]" style="width: 82%"></div></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-zinc-800 text-[10px] flex justify-between text-zinc-400">
+                        <div>OBSERVABILITY: <span class="text-[#00ff87] font-mono">HIGH</span></div>
+                        <div>SCALE READY: <span class="text-[#60efff] font-mono">YES</span></div>
+                    </div>
+                </div>
+
+                <!-- Active Protocols -->
+                <div class="nexus-card rounded-3xl p-5">
+                    <div class="section-header text-[#ff0080] mb-3">ACTIVE PROTOCOLS</div>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex items-center justify-between bg-zinc-900/60 px-3 py-2 rounded-2xl">
+                            <div class="flex items-center gap-x-2"><span class="protocol-badge bg-[#ff0080]/10 text-[#ff0080]">BUG</span> <span>Root Cause</span></div>
+                            <span class="font-mono text-emerald-400">ENFORCED</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-zinc-900/60 px-3 py-2 rounded-2xl">
+                            <div class="flex items-center gap-x-2"><span class="protocol-badge bg-[#60efff]/10 text-[#60efff]">FEAT</span> <span>Contract First</span></div>
+                            <span class="font-mono text-emerald-400">ENFORCED</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-zinc-900/60 px-3 py-2 rounded-2xl">
+                            <div class="flex items-center gap-x-2"><span class="protocol-badge bg-[#ffcc00]/10 text-[#ffcc00]">REFACTOR</span> <span>Coherent</span></div>
+                            <span class="font-mono text-emerald-400">ENFORCED</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom full width: Node Inspector + Quick Actions -->
+            <div class="lg:col-span-12">
+                <div class="nexus-card rounded-3xl p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        <!-- Node Inspector -->
+                        <div class="md:col-span-5">
+                            <div class="section-header text-zinc-400 mb-2">SELECTED NODE INSPECTOR</div>
+                            <div id="node-inspector" class="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-4 min-h-[108px]">
+                                <div class="text-sm text-zinc-400">Click any node on the graph to inspect its state, health, and dependencies.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Invariants -->
+                        <div class="md:col-span-7">
+                            <div class="section-header text-zinc-400 mb-2">SYSTEM INVARIANTS (MUST REMAIN TRUE)</div>
+                            <div class="flex flex-wrap gap-2">
+                                <div class="px-4 py-1.5 bg-emerald-950/40 border border-emerald-900/60 rounded-2xl text-xs flex items-center gap-x-2 text-emerald-400">
+                                    <i class="fa-solid fa-check-double"></i> <span>Backward compatible by default</span>
+                                </div>
+                                <div class="px-4 py-1.5 bg-emerald-950/40 border border-emerald-900/60 rounded-2xl text-xs flex items-center gap-x-2 text-emerald-400">
+                                    <i class="fa-solid fa-check-double"></i> <span>Atomic changes preferred</span>
+                                </div>
+                                <div class="px-4 py-1.5 bg-emerald-950/40 border border-emerald-900/60 rounded-2xl text-xs flex items-center gap-x-2 text-emerald-400">
+                                    <i class="fa-solid fa-check-double"></i> <span>No invented APIs or facts</span>
+                                </div>
+                                <div class="px-4 py-1.5 bg-emerald-950/40 border border-emerald-900/60 rounded-2xl text-xs flex items-center gap-x-2 text-emerald-400">
+                                    <i class="fa-solid fa-check-double"></i> <span>Strong validation on all edits</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 text-[10px] text-zinc-500">
+                                Decision Rule: Choose path that maximizes long-term reliability + architectural coherence + testability.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Bar -->
+        <div class="status-bar px-8 py-3 flex items-center justify-between text-xs font-mono text-zinc-400 border-t border-zinc-800">
+            <div class="flex items-center gap-x-5">
+                <div>PRINCIPAL ENGINEER MODE: <span class="text-[#00ff87]">ACTIVE</span></div>
+                <div>CHANGES ATOMIC: <span class="text-[#60efff]">TRUE</span></div>
+                <div>BACKWARD COMPAT: <span class="text-[#ffcc00]">ENFORCED</span></div>
+            </div>
+            <div class="flex items-center gap-x-4">
+                <div id="status-text">Ready for task • All invariants satisfied</div>
+                <div class="w-px h-3 bg-zinc-700"></div>
+                <div>LAST AUDIT: <span id="last-audit">just now</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind script
+        function initTailwind() {
+            document.documentElement.style.setProperty('--accent', '#00ff87');
+        }
+        
+        // Graph Data Structure
+        let nodes = [];
+        let links = [];
+        let selectedNode = null;
+        let isDragging = false;
+        let draggedNode = null;
+        let mouseX = 0, mouseY = 0;
+        let canvas, ctx;
+        let animationFrame;
+        let metrics = {
+            correctness: 94,
+            reliability: 89,
+            security: 97,
+            maintainability: 82
+        };
+        
+        // Mock repository structure - realistic for a game + tools project
+        function initGraph() {
+            nodes = [
+                { id: 'core-engine', label: 'core-engine', x: 380, y: 180, vx: 0, vy: 0, health: 96, type: 'core', degree: 0 },
+                { id: 'auth-module', label: 'auth-module', x: 180, y: 120, vx: 0, vy: 0, health: 91, type: 'security', degree: 0 },
+                { id: 'data-layer', label: 'data-layer', x: 520, y: 260, vx: 0, vy: 0, health: 67, type: 'data', degree: 0 },
+                { id: 'ui-components', label: 'ui-components', x: 260, y: 340, vx: 0, vy: 0, health: 88, type: 'ui', degree: 0 },
+                { id: 'game-logic', label: 'game-logic', x: 620, y: 140, vx: 0, vy: 0, health: 82, type: 'core', degree: 0 },
+                { id: 'network-sync', label: 'network-sync', x: 480, y: 80, vx: 0, vy: 0, health: 54, type: 'net', degree: 0 },
+                { id: 'utils', label: 'utils', x: 120, y: 260, vx: 0, vy: 0, health: 99, type: 'util', degree: 0 },
+                { id: 'config', label: 'config', x: 320, y: 420, vx: 0, vy: 0, health: 93, type: 'config', degree: 0 },
+                { id: 'unruly-engine', label: 'unruly-engine', x: 680, y: 320, vx: 0, vy: 0, health: 79, type: 'core', degree: 0 },
+                { id: 'payload-gen', label: 'payload-gen', x: 220, y: 200, vx: 0, vy: 0, health: 85, type: 'tool', degree: 0 },
+            ];
+            
+            links = [
+                { source: 'core-engine', target: 'auth-module', strength: 0.9 },
+                { source: 'core-engine', target: 'data-layer', strength: 0.7 },
+                { source: 'core-engine', target: 'game-logic', strength: 0.85 },
+                { source: 'auth-module', target: 'utils', strength: 0.6 },
+                { source: 'data-layer', target: 'utils', strength: 0.5 },
+                { source: 'data-layer', target: 'network-sync', strength: 0.4 }, // weak link causing issues
+                { source: 'game-logic', target: 'unruly-engine', strength: 0.95 },
+                { source: 'ui-components', target: 'core-engine', strength: 0.75 },
+                { source: 'config', target: 'core-engine', strength: 0.8 },
+                { source: 'network-sync', target: 'core-engine', strength: 0.65 },
+                { source: 'payload-gen', target: 'utils', strength: 0.7 },
+                { source: 'payload-gen', target: 'auth-module', strength: 0.55 },
+                { source: 'unruly-engine', target: 'data-layer', strength: 0.6 },
+                { source: 'ui-components', target: 'config', strength: 0.5 },
+                // intentional weak/critical for demo
+                { source: 'network-sync', target: 'data-layer', strength: 0.35 },
+            ];
+            
+            // Compute degrees
+            updateDegrees();
+            
+            // Initial slight spread for visual interest
+            nodes.forEach(n => {
+                n.x += (Math.random() - 0.5) * 40;
+                n.y += (Math.random() - 0.5) * 30;
+            });
+        }
+        
+        function updateDegrees() {
+            nodes.forEach(n => n.degree = 0);
+            links.forEach(l => {
+                const s = nodes.find(n => n.id === l.source);
+                const t = nodes.find(n => n.id === l.target);
+                if (s) s.degree++;
+                if (t) t.degree++;
+            });
+        }
+        
+        function getNodeById(id) {
+            return nodes.find(n => n.id === id);
+        }
+        
+        // Physics simulation - real force directed
+        function updatePhysics() {
+            const repulsion = 4200;
+            const attraction = 0.035;
+            const friction = 0.86;
+            const centerX = 400, centerY = 260;
+            
+            // Repulsion between all nodes
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[j].x - nodes[i].x;
+                    const dy = nodes[j].y - nodes[i].y;
+                    const distSq = dx * dx + dy * dy + 0.1;
+                    const force = repulsion / distSq;
+                    
+                    nodes[i].vx -= (dx / Math.sqrt(distSq)) * force * 0.6;
+                    nodes[i].vy -= (dy / Math.sqrt(distSq)) * force * 0.6;
+                    nodes[j].vx += (dx / Math.sqrt(distSq)) * force * 0.6;
+                    nodes[j].vy += (dy / Math.sqrt(distSq)) * force * 0.6;
+                }
+            }
+            
+            // Attraction along links
+            links.forEach(link => {
+                const s = getNodeById(link.source);
+                const t = getNodeById(link.target);
+                if (!s || !t) return;
+                
+                const dx = t.x - s.x;
+                const dy = t.y - s.y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                
+                const force = (dist - 110) * attraction * link.strength;
+                
+                s.vx += (dx / dist) * force;
+                s.vy += (dy / dist) * force;
+                t.vx -= (dx / dist) * force;
+                t.vy -= (dy / dist) * force;
+            });
+            
+            // Apply velocity + friction + boundary
+            nodes.forEach(node => {
+                if (node === draggedNode && isDragging) return;
+                
+                node.vx *= friction;
+                node.vy *= friction;
+                
+                node.x += node.vx;
+                node.y += node.vy;
+                
+                // Soft boundaries with padding
+                const pad = 45;
+                if (node.x < pad) { node.x = pad; node.vx *= -0.4; }
+                if (node.x > 755) { node.x = 755; node.vx *= -0.4; }
+                if (node.y < pad) { node.y = pad; node.vy *= -0.4; }
+                if (node.y > 475) { node.y = 475; node.vy *= -0.4; }
+                
+                // Gentle center pull
+                node.vx += (centerX - node.x) * 0.0008;
+                node.vy += (centerY - node.y) * 0.0008;
+            });
+        }
+        
+        // Render the graph with neon effects
+        function renderGraph() {
+            ctx.clearRect(0, 0, canvas.clientWidth || 800, canvas.clientHeight || 520);
+            
+            // Draw links
+            ctx.lineWidth = 1.5;
+            links.forEach(link => {
+                const s = getNodeById(link.source);
+                const t = getNodeById(link.target);
+                if (!s || !t) return;
+                
+                const healthAvg = (s.health + t.health) / 2;
+                let color = '#60efff';
+                let alpha = 0.65;
+                
+                if (healthAvg < 65) {
+                    color = '#ff0080';
+                    alpha = 0.85;
+                    ctx.lineWidth = 2.2;
+                } else if (healthAvg < 80) {
+                    color = '#ffcc00';
+                    alpha = 0.75;
+                }
+                
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = alpha;
+                
+                ctx.beginPath();
+                ctx.moveTo(s.x, s.y);
+                ctx.lineTo(t.x, t.y);
+                ctx.stroke();
+                
+                // Subtle direction indicator
+                if (healthAvg < 70) {
+                    ctx.strokeStyle = '#ff0080';
+                    ctx.globalAlpha = 0.9;
+                    const midX = (s.x + t.x) / 2;
+                    const midY = (s.y + t.y) / 2;
+                    ctx.beginPath();
+                    ctx.arc(midX, midY, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            });
+            ctx.globalAlpha = 1;
+            ctx.lineWidth = 1.5;
+            
+            // Draw nodes
+            nodes.forEach(node => {
+                const isSelected = selectedNode && selectedNode.id === node.id;
+                const radius = 13 + (node.health / 100) * 4;
+                
+                // Glow
+                ctx.shadowColor = node.health > 85 ? '#00ff87' : (node.health > 70 ? '#ffcc00' : '#ff0080');
+                ctx.shadowBlur = isSelected ? 22 : 11;
+                
+                // Core circle
+                ctx.fillStyle = node.health > 85 ? '#00ff87' : (node.health > 70 ? '#ffcc00' : '#ff0080');
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Inner dark
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#0a0a0f';
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, radius * 0.65, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Health ring
+                ctx.strokeStyle = node.health > 85 ? '#00ff87' : (node.health > 70 ? '#ffcc00' : '#ff0080');
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, radius + 2.5, 0, (node.health / 100) * Math.PI * 2);
+                ctx.stroke();
+                
+                // Label
+                ctx.fillStyle = '#e4e4e7';
+                ctx.font = '600 9.5px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.label, node.x, node.y + radius + 14);
+                
+                // Type badge
+                ctx.fillStyle = 'rgba(163, 163, 172, 0.7)';
+                ctx.font = '500 7px Inter, system-ui, sans-serif';
+                ctx.fillText(node.type.toUpperCase(), node.x, node.y - radius - 6);
+                
+                if (isSelected) {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, radius + 7, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            });
+            
+            ctx.shadowBlur = 0;
+        }
+
+        // Main animation loop
+        function animate() {
+            updatePhysics();
+            renderGraph();
+            updateMetricsDisplay();
+            
+            // Occasional subtle health drift for realism (only if not interacting)
+            if (!isDragging && Math.random() < 0.008) {
+                const weak = nodes.filter(n => n.health < 75);
+                if (weak.length > 0 && Math.random() < 0.5) {
+                    const n = weak[Math.floor(Math.random() * weak.length)];
+                    n.health = Math.max(48, n.health - 0.6);
+                }
+            }
+            
+            animationFrame = requestAnimationFrame(animate);
+        }
+        
+        function updateMetricsDisplay() {
+            // Compute live metrics from graph state
+            const avgHealth = nodes.reduce((sum, n) => sum + n.health, 0) / nodes.length;
+            const weakLinks = links.filter(l => {
+                const s = getNodeById(l.source);
+                const t = getNodeById(l.target);
+                return s && t && (s.health + t.health) / 2 < 70;
+            }).length;
+            
+            metrics.correctness = Math.round(Math.min(99, avgHealth * 0.97 + 4));
+            metrics.reliability = Math.round(Math.min(98, avgHealth * 0.92 + (weakLinks > 2 ? -8 : 6)));
+            metrics.security = Math.round(92 + (nodes.find(n => n.id === 'auth-module').health - 80) * 0.4);
+            metrics.maintainability = Math.round(78 + (avgHealth - 75) * 0.6 - weakLinks * 1.8);
+            
+            // Update DOM
+            document.getElementById('metric-correctness').textContent = metrics.correctness;
+            document.getElementById('metric-reliability').textContent = metrics.reliability;
+            document.getElementById('metric-security').textContent = metrics.security;
+            document.getElementById('metric-maintain').textContent = metrics.maintainability;
+            
+            document.getElementById('bar-correctness').style.width = metrics.correctness + '%';
+            document.getElementById('bar-reliability').style.width = metrics.reliability + '%';
+            document.getElementById('bar-security').style.width = metrics.security + '%';
+            document.getElementById('bar-maintain').style.width = metrics.maintainability + '%';
+            
+            // Color bars dynamically
+            const bars = {
+                'bar-correctness': metrics.correctness,
+                'bar-reliability': metrics.reliability,
+                'bar-security': metrics.security,
+                'bar-maintain': metrics.maintainability
+            };
+            
+            Object.keys(bars).forEach(id => {
+                const el = document.getElementById(id);
+                const val = bars[id];
+                if (val > 90) el.style.background = '#00ff87';
+                else if (val > 75) el.style.background = '#60efff';
+                else if (val > 60) el.style.background = '#ffcc00';
+                else el.style.background = '#ff0080';
+            });
+            
+            document.getElementById('node-count').textContent = nodes.length;
+            document.getElementById('link-count').textContent = links.length;
+        }
+        
+        // Canvas sizing: backing store matches CSS size x devicePixelRatio,
+        // drawing stays in CSS-pixel coordinates.
+        function resizeCanvas() {
+            if (!canvas || !ctx) return;
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.clientWidth || 800;
+            const h = canvas.clientHeight || 520;
+            canvas.width = Math.round(w * dpr);
+            canvas.height = Math.round(h * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            renderGraph();
+        }
+
+        // Mouse / Touch interaction
+        function setupCanvasInteraction() {
+            canvas = document.getElementById('repo-canvas');
+            ctx = canvas.getContext('2d', { alpha: true });
+            
+            function getMousePos(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+            
+            function findNodeAt(x, y) {
+                return nodes.find(n => {
+                    const r = 18 + (n.health / 100) * 5;
+                    return Math.hypot(n.x - x, n.y - y) < r;
+                });
+            }
+            
+            canvas.addEventListener('mousedown', (e) => {
+                const pos = getMousePos(e);
+                const node = findNodeAt(pos.x, pos.y);
+                if (node) {
+                    isDragging = true;
+                    draggedNode = node;
+                    selectedNode = node;
+                    showNodeInspector(node);
+                    canvas.style.cursor = 'grabbing';
+                } else {
+                    selectedNode = null;
+                    document.getElementById('node-inspector').innerHTML = 
+                        '<div class="text-sm text-zinc-400">Click any node on the graph to inspect its state, health, and dependencies.</div>';
+                }
+                renderGraph();
+            });
+            
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging || !draggedNode) return;
+                const pos = getMousePos(e);
+                draggedNode.x = pos.x;
+                draggedNode.y = pos.y;
+                draggedNode.vx = 0;
+                draggedNode.vy = 0;
+                renderGraph();
+            });
+            
+            window.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    draggedNode = null;
+                    canvas.style.cursor = 'default';
+                    // After drag, run quick validation pass
+                    setTimeout(() => {
+                        if (selectedNode) {
+                            logAgentAction(`Architecture adjustment on ${selectedNode.label} recorded.`, 'decision');
+                            // Small health boost for manual restructure (shows collaboration)
+                            selectedNode.health = Math.min(100, selectedNode.health + 3);
+                            updateMetricsDisplay();
+                        }
+                    }, 180);
+                }
+            });
+            
+            // Touch support for mobile
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const pos = {
+                    x: touch.clientX - rect.left,
+                    y: touch.clientY - rect.top
+                };
+                const node = findNodeAt(pos.x, pos.y);
+                if (node) {
+                    isDragging = true;
+                    draggedNode = node;
+                    selectedNode = node;
+                    showNodeInspector(node);
+                }
+            });
+            
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!isDragging || !draggedNode) return;
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                draggedNode.x = touch.clientX - rect.left;
+                draggedNode.y = touch.clientY - rect.top;
+                draggedNode.vx = 0;
+                draggedNode.vy = 0;
+                renderGraph();
+            });
+            
+            canvas.addEventListener('touchend', () => {
+                isDragging = false;
+                draggedNode = null;
+            });
+            
+            // Click for selection (already handled in mousedown)
+            canvas.addEventListener('click', (e) => {
+                const pos = getMousePos(e);
+                const node = findNodeAt(pos.x, pos.y);
+                if (!node && selectedNode) {
+                    selectedNode = null;
+                    document.getElementById('node-inspector').innerHTML = 
+                        '<div class="text-sm text-zinc-400">Click any node on the graph to inspect its state, health, and dependencies.</div>';
+                    renderGraph();
+                }
+            });
+            
+            // Keyboard support
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && selectedNode) {
+                    selectedNode = null;
+                    document.getElementById('node-inspector').innerHTML = 
+                        '<div class="text-sm text-zinc-400">Click any node on the graph to inspect its state, health, and dependencies.</div>';
+                    renderGraph();
+                }
+                if (e.key.toLowerCase() === 'r' && document.activeElement.tagName === 'BODY') {
+                    resetGraph();
+                }
+            });
+        }
+        
+        function showNodeInspector(node) {
+            const container = document.getElementById('node-inspector');
+            const connected = links.filter(l => l.source === node.id || l.target === node.id)
+                .map(l => l.source === node.id ? l.target : l.source);
+            
+            let html = `
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="font-semibold text-lg tracking-tight">${node.label}</div>
+                        <div class="text-xs text-zinc-400">${node.type.toUpperCase()} • ${node.degree} connections</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-mono font-semibold ${node.health > 85 ? 'text-[#00ff87]' : node.health > 70 ? 'text-[#ffcc00]' : 'text-[#ff0080]'}">${node.health}</div>
+                        <div class="text-[9px] text-zinc-500 -mt-1">HEALTH</div>
+                    </div>
+                </div>
+                
+                <div class="mt-3 pt-3 border-t border-zinc-700 text-xs">
+                    <div class="text-zinc-400 mb-1">CONNECTED MODULES</div>
+                    <div class="flex flex-wrap gap-1">
+                        ${connected.map(id => `<span class="px-2 py-0.5 bg-zinc-800 rounded text-[10px]">${id}</span>`).join('')}
+                    </div>
+                </div>
+                
+                <div class="mt-3 flex gap-x-2">
+                    <button onclick="agentOptimizeNode('${node.id}')" 
+                            class="flex-1 text-xs py-1.5 rounded-xl bg-[#00ff87] text-[#0a0a0f] font-bold hover:bg-white transition-colors">
+                        AGENT OPTIMIZE
+                    </button>
+                    <button onclick="highlightNodeDependencies('${node.id}')" 
+                            class="flex-1 text-xs py-1.5 rounded-xl border border-zinc-600 hover:bg-zinc-800 transition-colors">
+                        TRACE DEPS
+                    </button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+        
+        function agentOptimizeNode(nodeId) {
+            const node = getNodeById(nodeId);
+            if (!node) return;
+            
+            logAgentAction(`Applying Root Cause Analysis + Reliability Standard to ${node.label}...`, 'protocol');
+            
+            setTimeout(() => {
+                // Real improvement: boost health + reinforce weak links
+                const oldHealth = node.health;
+                node.health = Math.min(100, node.health + 12 + Math.random() * 6);
+                
+                // Strengthen connected weak links
+                links.forEach(l => {
+                    if ((l.source === nodeId || l.target === nodeId) && l.strength < 0.75) {
+                        l.strength = Math.min(0.98, l.strength + 0.18);
+                    }
+                });
+                
+                logAgentAction(`Patch complete. Health improved ${oldHealth} → ${Math.floor(node.health)}. Invariant preserved.`, 'success');
+                
+                // Visual pulse
+                const originalX = node.x, originalY = node.y;
+                for (let i = 0; i < 6; i++) {
+                    setTimeout(() => {
+                        if (node) {
+                            node.x = originalX + (Math.random() - 0.5) * 9;
+                            node.y = originalY + (Math.random() - 0.5) * 9;
+                            renderGraph();
+                        }
+                    }, i * 38);
+                }
+                setTimeout(() => {
+                    if (node) { node.x = originalX; node.y = originalY; }
+                    renderGraph();
+                    updateMetricsDisplay();
+                }, 280);
+                
+                if (selectedNode && selectedNode.id === nodeId) {
+                    showNodeInspector(node);
+                }
+            }, 420);
+        }
+        
+        function highlightNodeDependencies(nodeId) {
+            const node = getNodeById(nodeId);
+            if (!node) return;
+            
+            logAgentAction(`Tracing dependency path for ${node.label} (Decision Rule active)...`, 'decision');
+            
+            // Temporarily highlight connected
+            const connectedLinks = links.filter(l => l.source === nodeId || l.target === nodeId);
+            
+            // Flash effect
+            let flashes = 0;
+            const interval = setInterval(() => {
+                ctx.save();
+                connectedLinks.forEach(link => {
+                    const s = getNodeById(link.source);
+                    const t = getNodeById(link.target);
+                    if (!s || !t) return;
+                    ctx.strokeStyle = '#ff0080';
+                    ctx.lineWidth = 3.5;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ff0080';
+                    ctx.beginPath();
+                    ctx.moveTo(s.x, s.y);
+                    ctx.lineTo(t.x, t.y);
+                    ctx.stroke();
+                });
+                ctx.restore();
+                
+                flashes++;
+                if (flashes > 4) {
+                    clearInterval(interval);
+                    renderGraph();
+                }
+            }, 110);
+        }
+        
+        // Logging system
+        function logAgentAction(message, type = 'action') {
+            const logContainer = document.getElementById('agent-log');
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            
+            let prefix = '';
+            if (type === 'protocol') prefix = '[PROTOCOL] ';
+            else if (type === 'success') prefix = '[SUCCESS] ';
+            else if (type === 'decision') prefix = '[DECISION] ';
+            else prefix = '[ACTION] ';
+            
+            line.innerHTML = `<span class="text-zinc-500 text-[9px]">${time}</span> ${prefix}${message}`;
+            
+            logContainer.appendChild(line);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Limit log length
+            while (logContainer.children.length > 38) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('agent-log').innerHTML = '';
+            logAgentAction('Log cleared. All previous reasoning preserved in system state.', 'decision');
+        }
+
+        // Core: Execute Agent Task following all protocols
+        function executeAgentTask(customTask = null) {
+            const input = customTask || document.getElementById('task-input').value.trim();
+            if (!input) {
+                document.getElementById('task-input').value = 'Fix root cause of state inconsistency in data-layer';
+                return executeAgentTask();
+            }
+            
+            const log = document.getElementById('agent-log');
+            log.innerHTML = ''; // fresh for this task
+            
+            // === FOLLOW THE SKILL PROTOCOLS EXACTLY ===
+            logAgentAction(`Task received: "${input}"`, 'action');
+            logAgentAction('Identifying the actual problem or goal...', 'protocol');
+            
+            setTimeout(() => {
+                logAgentAction('Locating relevant files and execution flow (data-layer + network-sync)...', 'protocol');
+                
+                setTimeout(() => {
+                    // Detect task type
+                    const lower = input.toLowerCase();
+                    let taskType = 'general';
+                    
+                    if (lower.includes('fix') || lower.includes('bug') || lower.includes('race') || lower.includes('inconsist')) {
+                        taskType = 'bugfix';
+                    } else if (lower.includes('add') || lower.includes('feature') || lower.includes('collab') || lower.includes('real-time')) {
+                        taskType = 'feature';
+                    } else if (lower.includes('refactor') || lower.includes('improve') || lower.includes('clean')) {
+                        taskType = 'refactor';
+                    } else if (lower.includes('audit') || lower.includes('review')) {
+                        taskType = 'audit';
+                    }
+                    
+                    logAgentAction('Root cause identified: Weak link between data-layer ↔ network-sync causing state drift under concurrency.', 'decision');
+                    
+                    if (taskType === 'bugfix') {
+                        performBugFixProtocol(input);
+                    } else if (taskType === 'feature') {
+                        performFeatureProtocol(input);
+                    } else if (taskType === 'refactor') {
+                        performRefactorProtocol(input);
+                    } else {
+                        performGeneralAudit(input);
+                    }
+                    
+                    // Always update status
+                    document.getElementById('status-text').innerHTML = `Task complete • All invariants satisfied • ${new Date().toLocaleTimeString()}`;
+                    document.getElementById('last-audit').innerHTML = 'moments ago';
+                    
+                }, 680);
+            }, 380);
+        }
+        
+        function performBugFixProtocol(task) {
+            logAgentAction('Following Bug Fix Protocol: Confirm failure path...', 'protocol');
+            
+            setTimeout(() => {
+                // Find the problematic weak link
+                const weakLink = links.find(l => 
+                    (l.source === 'data-layer' && l.target === 'network-sync') || 
+                    (l.source === 'network-sync' && l.target === 'data-layer')
+                );
+                
+                if (weakLink) {
+                    logAgentAction('Failure path confirmed: Low-strength link (strength 0.35) + degraded health on network-sync (54).', 'action');
+                    
+                    // Visualize: highlight the bad link
+                    highlightCriticalLink(weakLink);
+                    
+                    setTimeout(() => {
+                        logAgentAction('Patching root cause (not symptom). Adding idempotent sync guard + state reconciliation.', 'success');
+                        
+                        // Patch: strengthen + boost healths
+                        weakLink.strength = 0.92;
+                        
+                        const dl = getNodeById('data-layer');
+                        const ns = getNodeById('network-sync');
+                        
+                        if (dl) dl.health = Math.min(100, dl.health + 18);
+                        if (ns) ns.health = Math.min(100, ns.health + 27);
+                        
+                        // Add a new "fix" link conceptually (increase another connection)
+                        const core = getNodeById('core-engine');
+                        if (core && ns) {
+                            // Already linked, just boost
+                            ns.health = Math.min(100, ns.health + 6);
+                        }
+                        
+                        logAgentAction('Regression protection added. System invariants preserved. Backward compatible change.', 'success');
+                        
+                        // Re-render with impact
+                        setTimeout(() => {
+                            renderGraph();
+                            updateMetricsDisplay();
+                            
+                            // Celebration pulse on fixed nodes
+                            [dl, ns].forEach(n => {
+                                if (n) {
+                                    const ox = n.x, oy = n.y;
+                                    let t = 0;
+                                    const pulse = setInterval(() => {
+                                        if (!n) { clearInterval(pulse); return; }
+                                        n.x = ox + Math.sin(t) * 2.5;
+                                        n.y = oy + Math.cos(t) * 1.8;
+                                        t += 0.8;
+                                        renderGraph();
+                                        if (t > 6) {
+                                            clearInterval(pulse);
+                                            n.x = ox; n.y = oy;
+                                            renderGraph();
+                                        }
+                                    }, 40);
+                                }
+                            });
+                        }, 120);
+                    }, 950);
+                }
+            }, 520);
+        }
+        
+        function highlightCriticalLink(link) {
+            let count = 0;
+            const interval = setInterval(() => {
+                const s = getNodeById(link.source);
+                const t = getNodeById(link.target);
+                if (!s || !t) { clearInterval(interval); return; }
+                
+                ctx.save();
+                ctx.strokeStyle = '#ff0080';
+                ctx.lineWidth = 4.5;
+                ctx.shadowBlur = 18;
+                ctx.shadowColor = '#ff0080';
+                ctx.beginPath();
+                ctx.moveTo(s.x, s.y);
+                ctx.lineTo(t.x, t.y);
+                ctx.stroke();
+                ctx.restore();
+                
+                count++;
+                if (count >= 7) {
+                    clearInterval(interval);
+                    renderGraph();
+                }
+            }, 95);
+        }
+        
+        function performFeatureProtocol(task) {
+            logAgentAction('Following Feature Protocol: Define contract clearly...', 'protocol');
+            
+            setTimeout(() => {
+                logAgentAction('Contract: New real-time collaboration module must integrate without breaking existing sync invariants.', 'decision');
+                
+                // Add new node dynamically
+                const newNode = {
+                    id: 'collab-engine',
+                    label: 'collab-engine',
+                    x: 580 + (Math.random() - 0.5) * 60,
+                    y: 210 + (Math.random() - 0.5) * 50,
+                    vx: 0, vy: 0,
+                    health: 78,
+                    type: 'feature',
+                    degree: 0
+                };
+                nodes.push(newNode);
+                
+                // Connect intelligently to best attachment points (core + network + game)
+                const connections = ['core-engine', 'network-sync', 'game-logic', 'unruly-engine'];
+                connections.forEach(targetId => {
+                    const target = getNodeById(targetId);
+                    if (target) {
+                        links.push({
+                            source: 'collab-engine',
+                            target: targetId,
+                            strength: 0.82 + Math.random() * 0.12
+                        });
+                    }
+                });
+                
+                updateDegrees();
+                
+                logAgentAction('New module instantiated. Best attachment points calculated using architectural coherence metric.', 'success');
+                logAgentAction('Integration complete. No public interface breakage. Test coverage path identified.', 'success');
+                
+                setTimeout(() => {
+                    renderGraph();
+                    updateMetricsDisplay();
+                    
+                    // Animate new node appearance
+                    let alpha = 0.1;
+                    const appear = setInterval(() => {
+                        alpha += 0.18;
+                        if (alpha > 1) {
+                            clearInterval(appear);
+                            renderGraph();
+                            return;
+                        }
+                        ctx.save();
+                        ctx.globalAlpha = alpha;
+                        ctx.fillStyle = '#60efff';
+                        ctx.beginPath();
+                        ctx.arc(newNode.x, newNode.y, 16, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }, 55);
+                }, 180);
+            }, 780);
+        }
+        
+        function performRefactorProtocol(task) {
+            logAgentAction('Following Refactor Protocol: Only if materially improves clarity, reuse, testability...', 'protocol');
+            
+            setTimeout(() => {
+                logAgentAction('Analysis: ui-components + config cluster shows low cohesion. Refactor justified.', 'decision');
+                
+                // Move nodes toward better architectural grouping (visual refactor)
+                const ui = getNodeById('ui-components');
+                const conf = getNodeById('config');
+                const core = getNodeById('core-engine');
+                
+                if (ui && conf && core) {
+                    // Pull them into tighter formation
+                    const targetX = core.x - 90;
+                    const targetY = core.y + 110;
+                    
+                    ui.x = targetX + 25;
+                    ui.y = targetY - 15;
+                    conf.x = targetX - 30;
+                    conf.y = targetY + 35;
+                    
+                    // Strengthen internal links
+                    links.forEach(l => {
+                        if ((l.source === 'ui-components' && l.target === 'config') || 
+                            (l.source === 'config' && l.target === 'ui-components')) {
+                            l.strength = 0.95;
+                        }
+                    });
+                    
+                    logAgentAction('Cohesion improved. Modules repositioned for clearer dependency boundaries.', 'success');
+                    logAgentAction('Testability increased. Future extension points documented in mental model.', 'success');
+                }
+                
+                setTimeout(() => {
+                    renderGraph();
+                    updateMetricsDisplay();
+                }, 220);
+            }, 650);
+        }
+        
+        function performGeneralAudit(task) {
+            logAgentAction('Full Audit initiated. Running cycle detection + health scan...', 'protocol');
+            
+            setTimeout(() => {
+                // Simple cycle detection demo (we have a near-cycle via data-layer <-> network-sync)
+                const hasWeakCycle = links.some(l => l.strength < 0.45 && 
+                    (l.source === 'data-layer' || l.target === 'data-layer'));
+                
+                if (hasWeakCycle) {
+                    logAgentAction('Weak cyclic dependency pattern detected in data flow. Non-blocking but monitored.', 'decision');
+                }
+                
+                logAgentAction('Topological projection complete. All core modules have clean dependency ordering.', 'success');
+                logAgentAction('Audit result: 3 modules below reliability threshold. 1 link requires attention.', 'action');
+                
+                // Highlight all weak nodes briefly
+                const weakNodes = nodes.filter(n => n.health < 72);
+                weakNodes.forEach((n, idx) => {
+                    setTimeout(() => {
+                        const ox = n.x, oy = n.y;
+                        n.x += 4; n.y -= 3;
+                        renderGraph();
+                        setTimeout(() => {
+                            if (n) { n.x = ox; n.y = oy; }
+                            renderGraph();
+                        }, 180);
+                    }, idx * 90);
+                });
+                
+                setTimeout(() => {
+                    updateMetricsDisplay();
+                    renderGraph();
+                }, 650);
+            }, 720);
+        }
+        
+        function runPresetTask(type) {
+            const input = document.getElementById('task-input');
+            
+            if (type === 'bugfix') {
+                input.value = 'Fix race condition causing state inconsistency between data-layer and network-sync';
+                executeAgentTask();
+            } else if (type === 'feature') {
+                input.value = 'Add real-time collaborative editing support to UNRULY game engine';
+                executeAgentTask();
+            } else if (type === 'refactor') {
+                input.value = 'Refactor ui-components and config for higher cohesion and testability';
+                executeAgentTask();
+            } else if (type === 'audit') {
+                input.value = 'Perform full architecture audit and dependency health check';
+                executeAgentTask();
+            }
+        }
+        
+        function startTraining() {
+            const btns = document.querySelectorAll('button');
+            logAgentAction('Training loop started. Reinforcing good patterns per Reliability Standard...', 'protocol');
+            
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                
+                // Gradually improve all nodes
+                nodes.forEach(n => {
+                    if (n.health < 100) {
+                        n.health = Math.min(100, n.health + 1.8 + Math.random() * 1.2);
+                    }
+                });
+                
+                // Strengthen weak links
+                links.forEach(l => {
+                    if (l.strength < 0.9) l.strength = Math.min(0.98, l.strength + 0.04);
+                });
+                
+                renderGraph();
+                updateMetricsDisplay();
+                
+                if (step % 2 === 0) {
+                    logAgentAction(`Training iteration ${step}: Average health improved. Observability hooks reinforced.`, 'success');
+                }
+                
+                if (step >= 11) {
+                    clearInterval(interval);
+                    logAgentAction('Training complete. System now operating at peak reliability envelope.', 'success');
+                    document.getElementById('status-text').innerHTML = 'Training complete • Peak state achieved';
+                }
+            }, 380);
+        }
+        
+        
+        function resetGraph() {
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+            
+            initGraph();
+            selectedNode = null;
+            document.getElementById('node-inspector').innerHTML = 
+                '<div class="text-sm text-zinc-400">Click any node on the graph to inspect its state, health, and dependencies.</div>';
+            
+            // Reset metrics to initial
+            metrics = { correctness: 94, reliability: 89, security: 97, maintainability: 82 };
+            
+            renderGraph();
+            updateMetricsDisplay();
+            
+            const log = document.getElementById('agent-log');
+            log.innerHTML = '';
+            logAgentAction('Graph state reset to baseline. All invariants restored.', 'decision');
+            
+            // Restart animation
+            animate();
+        }
+        
+        function updateNodeCount() {
+            // Already handled in metrics
+        }
+        
+        function downloadArtifact() {
+            const html = document.documentElement.outerHTML;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'NEXUS_Principal_Engineer_Artifact_v2.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // Also log it
+            setTimeout(() => {
+                const log = document.getElementById('agent-log');
+                if (log) {
+                    logAgentAction('Artifact downloaded successfully. Ready for portfolio / interview share.', 'success');
+                }
+            }, 800);
+        }
+        
+        // Initialize everything
+        function initialize() {
+            initTailwind();
+            initGraph();
+            
+            // Initial log entries demonstrating the skill
+            const log = document.getElementById('agent-log');
+            log.innerHTML = `
+                <div class="log-line log-protocol"><span class="text-zinc-500 text-[9px]">${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span> [PROTOCOL] Repository state loaded. All Non-Negotiable Rules active.</div>
+                <div class="log-line log-decision"><span class="text-zinc-500 text-[9px]">${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span> [DECISION] Strongest safe assumption applied: data-layer health degradation is primary risk vector.</div>
+                <div class="log-line log-success"><span class="text-zinc-500 text-[9px]">${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span> [SUCCESS] Backward compatibility verified. No public interfaces modified.</div>
+            `;
+            
+            setupCanvasInteraction();
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            renderGraph();
+            updateMetricsDisplay();
+            
+            // Start the physics + render loop
+            animate();
+            
+            // Boot message
+            setTimeout(() => {
+                logAgentAction('Principal Engineer Agent fully initialized. Ready for production tasks.', 'success');
+            }, 1250);
+            
+            // Easter egg: click logo to train
+            const logo = document.querySelector('.fa-microchip');
+            if (logo) {
+                logo.style.cursor = 'pointer';
+                logo.addEventListener('click', () => {
+                    startTraining();
+                });
+            }
+            
+            // Make sure initial metrics look good
+            setTimeout(updateMetricsDisplay, 200);
+            
+            // Keyboard hint
+            console.log('%c[NEXUS] Keyboard: Press "r" to reset graph. ESC to deselect node.', 'color:#3f3f46');
+        }
+        
+        // Boot
+        window.onload = initialize;
+    </script>
+</body>
+</html>
