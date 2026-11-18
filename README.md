@@ -35,3 +35,22 @@ others were rejected:
 Only packaging changes were made here: the Nov 6 icon set was moved into
 `icons/` with standard names, `<head>` icon links and `manifest.json`
 updated to point at them. No code changes.
+
+## Live
+
+https://principal-engineer.netlify.app/
+
+## How to use
+
+1. Open the live site.
+2. Pick a task preset — bugfix, feature, refactor, audit, or training — and run it.
+3. Watch the agent log and the repo graph while the (simulated) agent works.
+4. Check the health metrics, then download the artifact if you want the output.
+
+Everything on the page is a demo: the log, graph, and metrics are simulated in the browser. Nothing here measures a real repo.
+
+## Links
+
+- Live site: https://principal-engineer.netlify.app/
+- NEXUS World Hub: https://nexus-world-hub.netlify.app/
+- Repo: https://github.com/AntManThePro/principal-engineer

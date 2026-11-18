@@ -453,8 +453,11 @@
                 <div id="status-text">Ready for task • All invariants satisfied</div>
                 <div class="w-px h-3 bg-zinc-700"></div>
                 <div>LAST AUDIT: <span id="last-audit">just now</span></div>
+                <button id="antEggBtn" title="An ant works here" class="text-[#00ff87] hover:text-[#ffcc00] cursor-pointer">🐜</button>
             </div>
         </div>
+        <!-- 🐜 Easter egg: tap the ant in the status bar above -->
+        <div id="antEgg" class="hidden px-8 py-2 text-[10px] font-mono text-zinc-500 border-t border-zinc-800">🐜 FIELD NOTE FROM DOUBLEA: this dashboard grades code, but the ant grades the grader — and the grader forgot to test on a real phone again. <span class="text-zinc-600">Fine print: the ant is not a metric. It does not ship, it does not scale, it does not attend standup. It just shows up, like good QA. Not perfect, just real.</span></div>
     </div>
 
     <script>
@@ -1475,6 +1478,10 @@
             console.log('%c[NEXUS] Keyboard: Press "r" to reset graph. ESC to deselect node.', 'color:#3f3f46');
         }
         
+        // 🐜 Easter egg: the ant in the status bar has opinions about this dashboard.
+        var antBtn = document.getElementById('antEggBtn'), antEgg = document.getElementById('antEgg');
+        if (antBtn && antEgg) { antBtn.addEventListener('click', function(){ antEgg.classList.toggle('hidden'); }); }
+
         // Boot
         window.onload = initialize;
     </script>
